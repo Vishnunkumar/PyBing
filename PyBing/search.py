@@ -1,13 +1,25 @@
+# The below code is Python class called `BingSearch` that allows you to perform a Bing search and retrieve the search results.
 import requests
 import re
 from bs4 import BeautifulSoup
 
+# The BingSearch class is used to perform searches on the Bing search engine.
 class BingSearch:
 
     def __init__(self, query):
         self.query = query
     
     def get_results(self, num, max_lines):
+        """
+        The `get_results` function retrieves search results from Bing based on a given query and returns
+        the content of the web pages up to a specified maximum number of lines.
+        
+        :param num: The `num` parameter specifies the number of search results to retrieve. It
+        determines how many search results will be fetched and returned in the `content_list`
+        :param max_lines: The `max_lines` parameter specifies the maximum number of lines of content to
+        retrieve from each URL
+        :return: a list of content.
+        """
         
         self.num = num
         self.max_lines = max_lines
@@ -43,6 +55,17 @@ class BingSearch:
             return str(e)
     
     def get_content(self, url, max_lines):
+        """
+        The `get_content` function takes a URL and a maximum number of lines as input, retrieves the
+        content from the URL, and returns a dictionary containing the URL, title, and a truncated
+        version of the content.
+        
+        :param url: The URL of the webpage you want to scrape the content from
+        :param max_lines: The `max_lines` parameter is the maximum number of lines of content that you
+        want to retrieve from the webpage
+        :return: a dictionary `u_dict` containing the URL, title, and content of the webpage. If there
+        is an exception, it will return the error message as a string.
+        """
         
         self.url = url    
         self.max_lines = max_lines
