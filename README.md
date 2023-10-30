@@ -5,4 +5,4 @@ Python wrapper for Bing Search results.
 
 ```
 
-```python
+python```
