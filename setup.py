@@ -9,20 +9,20 @@ requirements = [
 
 
 setuptools.setup(
-    name="PyBing",
+    name="PyBingSearch",
     version="0.0.1",
     author="Vishnu Nandakumar",
     author_email="nkumarvishnu25@gmail.com",
     description="Python wrapper for Bing Search",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url = 'https://github.com/Vishnunkumar/PyBing/',
+    url = 'https://github.com/Vishnunkumar/PyBingSearch/',
     packages=[
-        'PyBing',
+        'PyBingSearch',
     ],
-    package_dir={'PyBing': 'PyBing'},
+    package_dir={'PyBingSearch': 'PyBingSearch'},
     package_data={
-        'PyBing': ['PyBing/*.py']
+        'PyBingSearch': ['PyBingSearch/*.py']
     },
     install_requires=requirements,
     license="MIT license",
