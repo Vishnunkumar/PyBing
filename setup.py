@@ -4,7 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 requirements = [
-  "beautifulsoup4"
+    "beautifulsoup4",
+    "langchain"
 ]
 
 
