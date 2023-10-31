@@ -8,22 +8,21 @@ requirements = [
     "langchain"
 ]
 
-
 setuptools.setup(
-    name="PyBingSearch",
+    name="PyBingRAG",
     version="0.0.1",
     author="Vishnu Nandakumar",
     author_email="nkumarvishnu25@gmail.com",
-    description="Python wrapper for Bing Search",
+    description="Python wrapper for Bing Search and RAG extraction",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url = 'https://github.com/Vishnunkumar/PyBingSearch/',
+    url = 'https://github.com/Vishnunkumar/PyBingRAG/',
     packages=[
-        'PyBingSearch',
+        'PyBingRAG',
     ],
-    package_dir={'PyBingSearch': 'PyBingSearch'},
+    package_dir={'PyBingRAG': 'PyBingRAG'},
     package_data={
-        'PyBingSearch': ['PyBingSearch/*.py']
+        'PyBingRAG': ['PyBingRAG/*.py']
     },
     install_requires=requirements,
     license="MIT license",
