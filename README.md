@@ -13,6 +13,6 @@ bing_results = bing.get_results(num=4, max_lines=15)
 # bing_results[i]['content'] - scrapped content
 # nlines - num of iterations
 # hfkey - hugging face secret key
-bing_rag = bing.rag_output(bing_results[i]['content'], nlines, hfkey)
+print(bing.rag_output("Tell me about Mr. Narendra Modi?", n_iters=15, bing_results, hfkey))
 
 ```
