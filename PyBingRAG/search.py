@@ -1,9 +1,12 @@
 # The BingSearch class is used to perform web scraping on Bing search results.
 import os
 import requests
+import numpy as np
 from bs4 import BeautifulSoup
 from langchain.llms import HuggingFaceEndpoint, HuggingFaceHub, HuggingFacePipeline
 from langchain import PromptTemplate, LLMChain
+from sklearn.metrics.pairwise import cosine_similarity
+from langchain.embeddings import HuggingFaceEmbeddings
 
 class BingSearch:
 
@@ -99,29 +102,66 @@ class BingSearch:
         except Exception as e:
             return str(e)
     
-    def rag_output(self, promptquery, n_lines, hf_key):
+    def rag_init(self, query, bingresults):
         """
-        The `rag_output` function takes a prompt query, number of lines, and Hugging Face API key as inputs,
-        and generates a response using a language model from the Hugging Face model hub.
+        The `rag_init` function takes a query and a list of Bing search results, calculates embeddings for
+        the text results and the query using HuggingFaceEmbeddings, computes the cosine similarity between
+        each text result and the query, and returns the text result with the highest cosine similarity.
         
-        :param promptquery: The `promptquery` parameter is a string that represents the additional query or
-        prompt that you want to add to the original question. It will be appended to the `question` variable
-        before generating the output
-        :param n_lines: The `n_lines` parameter represents the number of lines of text you want to generate
-        as output. It determines how many times the loop will run to generate additional text
-        :param hf_key: The `hf_key` parameter is the Hugging Face API token. It is used to authenticate and
-        access the Hugging Face models and resources. You need to provide a valid API token in order to use
-        the Hugging Face models in your code
-        :return: The function `rag_output` returns a string that consists of the question followed by the
-        generated text from the language model.
+        :param query: The query parameter is a string that represents the search query or question for which
+        you want to find the most relevant result
+        :param bingresults: The `bingresults` parameter is a list of dictionaries. Each dictionary
+        represents a search result from Bing and contains information about the search result, such as the
+        title, URL, and content of the search result
+        :return: The function `rag_init` returns the text result from `bingresults` that has the highest
+        cosine similarity with the embedded query.
+        """
+        
+        self.query = query
+        self.bingresults = bingresults
+        embeddings = HuggingFaceEmbeddings()
+        
+
+        text_results = [x['content'] for x in self.bingresults]
+        text_embeds = np.array(embeddings.embed_documents(text_results))
+        q_embed = np.array(embeddings.embed_documents([self.query]))
+        q_cosine = []
+        for t in text_embeds:
+            q_cosine.append(cosine_similarity(t.reshape(1, q_embed.shape[1]), q_embed))
+
+        return text_results[q_cosine.index(max(q_cosine))]
+    
+    def rag_output(self, promptquery, n_iters, bingresults, hf_key):
+        """
+        The `rag_output` function takes in a prompt query, number of iterations, Bing search results,
+        and Hugging Face API key. It initializes the RAG model, generates a question based on the prompt
+        query and Bing search results, and uses the RAG model to generate a response. It repeats this
+        process for the specified number of iterations and returns the final question and response.
+        
+        :param promptquery: The promptquery parameter is a string that represents the initial query or
+        prompt for the model. It is the input that the model will use to generate the desired output
+        :param n_iters: The `n_iters` parameter specifies the number of iterations or loops to run the
+        RAG model. Each iteration generates additional text based on the previous output, allowing the
+        model to provide more detailed and comprehensive responses
+        :param bingresults: The `bingresults` parameter is used to pass the search results obtained from
+        the Bing search engine. It is likely used as input to the `rag_init` function, which initializes
+        the RAG (Retrieval-Augmented Generation) model. The specific implementation of `rag_init` is not
+        provided
+        :param hf_key: The `hf_key` parameter is the Hugging Face API key. It is used to authenticate
+        and access the Hugging Face models and resources
+        :return: The function `rag_output` returns a string that consists of the original question
+        followed by the generated text from the language model.
         """
         
         self.promptquery = promptquery
-        self.n_lines = n_lines
+        self.bingresults = bingresults
+        self.n_iters = n_iters
         self.hf_key = hf_key
         
         os.environ['HUGGINGFACEHUB_API_TOKEN'] = self.hf_key
-        question = self.query + " " + self.promptquery
+        
+        rag_input = self.rag_init(self.promptquery, self.bingresults)
+        question = self.promptquery + " Here is the requested information: " + rag_input
         
         try:
             template = """{question}"""
@@ -132,14 +172,13 @@ class BingSearch:
             )
             llm_chain = LLMChain(prompt=prompt, llm=llm)
 
-            for i in range(self.n_lines):
+            for i in range(self.n_iters):
                 prompt = PromptTemplate(template=template, input_variables=["question"])
                 llm_chain = LLMChain(prompt=prompt, llm=llm)
                 text = llm_chain.run(question)
                 template = str(template) + str(text)
                 
-            return question + '.' + template
+            return question + ' . ' + template
         
         except Exception as e:
             return str(e)
-            
