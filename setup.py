@@ -10,7 +10,7 @@ requirements = [
 
 setuptools.setup(
     name="PyBingRAG",
-    version="0.0.1",
+    version="0.0.4",
     author="Vishnu Nandakumar",
     author_email="nkumarvishnu25@gmail.com",
     description="Python wrapper for Bing Search and RAG extraction",
