@@ -1,13 +1,3 @@
-# The BingSearch class is used to perform web scraping on Bing search results.
-import os
-import requests
-import numpy as np
-from bs4 import BeautifulSoup
-from langchain.llms import HuggingFaceEndpoint, HuggingFaceHub, HuggingFacePipeline
-from langchain import PromptTemplate, LLMChain
-from sklearn.metrics.pairwise import cosine_similarity
-from langchain.embeddings import HuggingFaceEmbeddings
-
 class BingSearch:
 
     def __init__(self, query):
@@ -34,10 +24,11 @@ class BingSearch:
         self.num = num
         self.max_lines = max_lines
         
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36'}
+        ua1 = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"
+        headers = {'User-Agent': ua1}
         
         try:
-            bing_url = "https://www.bing.com/search?&q=" + self.query.lower()
+            bing_url = "https://www.bing.com/search?&q=" + self.query.lower().replace(" ","+")
             result = requests.get(url=bing_url, headers=headers)
             soup = BeautifulSoup(result.text, 'html.parser')
             a_tags = soup.find_all('a', {"class": "b_widePag sb_bp"})
@@ -81,7 +72,9 @@ class BingSearch:
         
         self.url = url    
         self.max_lines = max_lines
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36'}
+        
+        ua1 = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"
+        headers = {'User-Agent': ua1}
         
         try:
             u_dict = {}
@@ -131,7 +124,7 @@ class BingSearch:
 
         return text_results[q_cosine.index(max(q_cosine))]
     
-    def rag_output(self, promptquery, n_iters, bingresults, hf_key):
+    def rag_output(self, promptquery, bingresults, hf_key, n_iters=15):
         """
         The `rag_output` function takes in a prompt query, number of iterations, Bing search results,
         and Hugging Face API key. It initializes the RAG model, generates a question based on the prompt
@@ -178,7 +171,7 @@ class BingSearch:
                 text = llm_chain.run(question)
                 template = str(template) + str(text)
                 
-            return question + ' . ' + template
+            return question + ' . ' + template.replace("{question}", "")
         
         except Exception as e:
             return str(e)
