@@ -1,3 +1,13 @@
+# The BingSearch class is used to perform web scraping on Bing search results.
+import os
+import requests
+import numpy as np
+from bs4 import BeautifulSoup
+from langchain.llms import HuggingFaceEndpoint, HuggingFaceHub, HuggingFacePipeline
+from langchain import PromptTemplate, LLMChain
+from sklearn.metrics.pairwise import cosine_similarity
+from langchain.embeddings import HuggingFaceEmbeddings
+
 class BingSearch:
 
     def __init__(self, query):
