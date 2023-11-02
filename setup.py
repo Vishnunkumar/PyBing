@@ -12,20 +12,20 @@ requirements = [
 ]
 
 setuptools.setup(
-    name="PyBingRAG",
-    version="0.0.6",
+    name="PyBingScrapper",
+    version="0.0.7",
     author="Vishnu Nandakumar",
     author_email="nkumarvishnu25@gmail.com",
     description="Python wrapper for Bing Search and RAG extraction",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url = 'https://github.com/Vishnunkumar/PyBingRAG/',
+    url = 'https://github.com/Vishnunkumar/PyBingScrapper/',
     packages=[
-        'PyBingRAG',
+        'PyBingScrapper',
     ],
-    package_dir={'PyBingRAG': 'PyBingRAG'},
+    package_dir={'PyBingScrapper': 'PyBingScrapper'},
     package_data={
-        'PyBingRAG': ['PyBingRAG/*.py']
+        'PyBingScrapper': ['PyBingScrapper/*.py']
     },
     install_requires=requirements,
     license="MIT license",
