@@ -55,7 +55,8 @@ class BingSearch:
                     pg_url_list.append(u)
             i = 0
             for url_ in a_url_tags:
-                content_list.append(self.get_content(url_, self.max_lines))
+                if self.get_content(url_, self.max_lines) != '':
+                    content_list.append(self.get_content(url_, self.max_lines))
                 if i == self.num:
                     break
                 i = i + 1
