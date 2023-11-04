@@ -55,7 +55,7 @@ class BingSearch:
                     pg_url_list.append(u)
             i = 0
             for url_ in a_url_tags:
-                if self.get_content(url_, self.max_lines) != '':
+                if self.get_content(url_, self.max_lines) is not None:
                     content_list.append(self.get_content(url_, self.max_lines))
                 if i == self.num:
                     break
@@ -91,15 +91,12 @@ class BingSearch:
             u_dict = {}
             r = requests.get(self.url, headers=headers)
             soup = BeautifulSoup(r.text, 'html.parser')
-            p_tags = soup.find_all('p')
-            p_text = []
-            for p in p_tags:
-                if len(p.text) > 20:
-                    p_text.append(p.text)
-            
+            p_tags = soup.find_all('p', limit=self.max_lines)
+            p_text = [x.text for x in p_tags]
+
             u_dict['url'] = self.url
             u_dict['title'] = soup.title.text
-            u_dict['content'] = ('.').join(p_text[:self.max_lines])
+            u_dict['content'] = ('.').join(p_text)
 
             return u_dict
         
@@ -124,7 +121,6 @@ class BingSearch:
         self.query = query
         self.bingresults = bingresults
         embeddings = HuggingFaceEmbeddings()
-        
 
         text_results = [x['content'] for x in self.bingresults]
         text_embeds = np.array(embeddings.embed_documents(text_results))
