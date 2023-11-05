@@ -55,7 +55,7 @@ class BingSearch:
                     pg_url_list.append(u)
             i = 0
             for url_ in a_url_tags:
-                if self.get_content(url_, self.max_lines) is not None:
+                if len(self.get_content(url_, self.max_lines)) == 3:
                     content_list.append(self.get_content(url_, self.max_lines))
                 if i == self.num:
                     break
@@ -131,7 +131,7 @@ class BingSearch:
 
         return text_results[q_cosine.index(max(q_cosine))]
     
-    def rag_output(self, promptquery, bingresults, hf_key, n_iters=15):
+    def rag_output(self, bingresults, hf_key, n_iters=15):
         """
         The `rag_output` function takes in a prompt query, number of iterations, Bing search results,
         and Hugging Face API key. It initializes the RAG model, generates a question based on the prompt
@@ -153,22 +153,21 @@ class BingSearch:
         followed by the generated text from the language model.
         """
         
-        self.promptquery = promptquery
         self.bingresults = bingresults
         self.n_iters = n_iters
         self.hf_key = hf_key
         
         os.environ['HUGGINGFACEHUB_API_TOKEN'] = self.hf_key
         
-        rag_input = self.rag_init(self.promptquery, self.bingresults)
-        question = self.promptquery + " Here is the requested information: " + rag_input
+        rag_input = self.rag_init(self.query, self.bingresults)
+        question = self.query + " Here is the requested information: " + rag_input
         
         try:
             template = """{question}"""
             prompt = PromptTemplate(template=template, input_variables=["question"])
             repo_id = "tiiuae/falcon-7b"
             llm = HuggingFaceHub(
-                repo_id=repo_id, model_kwargs={"temperature": 0.7, "top-k": 50, "top-p":.85, "min_new_tokens": 1024, "max_len": 64}
+                repo_id=repo_id, model_kwargs={"temperature": 0.6, "top-k": 100, "top-p":.85, "min_new_tokens": 1024, "max_len": 64}
             )
             llm_chain = LLMChain(prompt=prompt, llm=llm)
 
@@ -178,7 +177,7 @@ class BingSearch:
                 text = llm_chain.run(question)
                 template = str(template) + str(text)
                 
-            return question + ' . ' + template.replace("{question}", "")
+            return question + ' . ' + template.replace("{question}", ""), {"question": question, "generated-text": template}
         
         except Exception as e:
             return str(e)
