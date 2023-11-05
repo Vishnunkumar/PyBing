@@ -36,6 +36,6 @@ bing_results = bing.get_results(num=4, max_lines=15)
 To implement RAG algorithm over the query use the below. RAG - RAG is a framework/algorithm to improve LLM-generated responses by leveraging external information such as Wikipedia information etc for the queried prompt.
 
 ```python
-print(bing.rag_output("Tell me about Mr. Narendra Modi?", bing_results, hfkey, n_iters=15))
+print(bing.rag_output(bing_results, hfkey, n_iters=15))
 ```
 
