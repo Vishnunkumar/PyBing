@@ -164,7 +164,7 @@ class BingSearch:
         try:
             repo_id = "tiiuae/falcon-7b"
             LLM = HuggingFaceHub(
-                repo_id=repo_id, model_kwargs={"temperature": 0.6, "top-k": 100, "top-p":.85, "min_new_tokens": 1024, "max_len": 64}
+                repo_id=repo_id, model_kwargs={"temperature": 0.7, "top-k": 50, "top-p":.85, "min_new_tokens": 1024, "max_len": 64}
             )
             qa = RetrievalQA.from_chain_type(llm=LLM, chain_type="stuff", retriever=retriever_pipeline, return_source_documents=True)
 
