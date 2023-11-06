@@ -1,12 +1,14 @@
 # The BingSearch class is used to perform web scraping on Bing search results.
 import os
 import requests
-import numpy as np
 from bs4 import BeautifulSoup
 from langchain.llms import HuggingFaceEndpoint, HuggingFaceHub, HuggingFacePipeline
 from langchain import PromptTemplate, LLMChain
-from sklearn.metrics.pairwise import cosine_similarity
 from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.docstore.document import Document
+from langchain.vectorstores import Chroma
+from langchain.prompts import PromptTemplate
+from langchain.chains import RetrievalQA
 
 class BingSearch:
 
@@ -120,16 +122,13 @@ class BingSearch:
         
         self.query = query
         self.bingresults = bingresults
-        embeddings = HuggingFaceEmbeddings()
 
-        text_results = [x['content'] for x in self.bingresults]
-        text_embeds = np.array(embeddings.embed_documents(text_results))
-        q_embed = np.array(embeddings.embed_documents([self.query]))
-        q_cosine = []
-        for t in text_embeds:
-            q_cosine.append(cosine_similarity(t.reshape(1, q_embed.shape[1]), q_embed))
+        texts = [Document(page_content=x['content']) for x in self.bingresults]
+        docsearch = Chroma.from_documents(texts, HuggingFaceEmbeddings())
+        most_matched = docsearch.similarity_search_with_relevance_scores(self.query)[0][0]
+        retriever = docsearch.as_retriever(search_type="mmr", search_kwargs={'fetch_k': 20})
 
-        return text_results[q_cosine.index(max(q_cosine))]
+        return most_matched.page_content, retriever
     
     def rag_output(self, bingresults, hf_key, n_iters=15):
         """
@@ -159,25 +158,21 @@ class BingSearch:
         
         os.environ['HUGGINGFACEHUB_API_TOKEN'] = self.hf_key
         
-        rag_input = self.rag_init(self.query, self.bingresults)
+        rag_input, retriever_pipeline  = self.rag_init(self.query, self.bingresults)
         question = self.query + " Here is the requested information: " + rag_input
         
         try:
-            template = """{question}"""
-            prompt = PromptTemplate(template=template, input_variables=["question"])
             repo_id = "tiiuae/falcon-7b"
-            llm = HuggingFaceHub(
+            LLM = HuggingFaceHub(
                 repo_id=repo_id, model_kwargs={"temperature": 0.6, "top-k": 100, "top-p":.85, "min_new_tokens": 1024, "max_len": 64}
             )
-            llm_chain = LLMChain(prompt=prompt, llm=llm)
+            qa = RetrievalQA.from_chain_type(llm=LLM, chain_type="stuff", retriever=retriever_pipeline, return_source_documents=True)
 
             for i in range(self.n_iters):
-                prompt = PromptTemplate(template=template, input_variables=["question"])
-                llm_chain = LLMChain(prompt=prompt, llm=llm)
-                text = llm_chain.run(question)
-                template = str(template) + str(text)
+                result = qa({"query": question})
+                question = str(question) + str(result['result'])
                 
-            return question + ' . ' + template.replace("{question}", ""), {"question": question, "generated-text": template}
+            return question, {"question": self.query + rag_input, "generated-text": question}
         
         except Exception as e:
             return str(e)
