@@ -8,7 +8,7 @@ requirements = [
     "langchain",
     "numpy",
     "sentence_transformers",
-    "scikit-learn"
+    "chromadb"
 ]
 
 setuptools.setup(
