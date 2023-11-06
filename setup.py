@@ -13,7 +13,7 @@ requirements = [
 
 setuptools.setup(
     name="PyBingScrapper",
-    version="1.0.1",
+    version="1.0.2",
     author="Vishnu Nandakumar",
     author_email="nkumarvishnu25@gmail.com",
     description="Python wrapper for Bing Search and RAG extraction",
