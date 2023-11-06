@@ -160,19 +160,23 @@ class BingSearch:
         
         rag_input, retriever_pipeline  = self.rag_init(self.query, self.bingresults)
         question = self.query + " Here is the requested information: " + rag_input
-        
+
         try:
+            template = """{question}"""
+            prompt = PromptTemplate(template=template, input_variables=["question"])
             repo_id = "tiiuae/falcon-7b"
-            LLM = HuggingFaceHub(
-                repo_id=repo_id, model_kwargs={"temperature": 0.7, "top-k": 50, "top-p":.85, "min_new_tokens": 1024, "max_len": 64}
+            llm = HuggingFaceHub(
+                repo_id=repo_id, model_kwargs={"temperature": 0.5, "max_length": 64}
             )
-            qa = RetrievalQA.from_chain_type(llm=LLM, chain_type="stuff", retriever=retriever_pipeline, return_source_documents=True)
+            llm_chain = LLMChain(prompt=prompt, llm=llm)
 
             for i in range(self.n_iters):
-                result = qa({"query": question})
-                question = str(question) + str(result['result'])
-                
-            return question, {"question": self.query + rag_input, "generated-text": question}
+                prompt = PromptTemplate(template=template, input_variables=["question"])
+                llm_chain = LLMChain(prompt=prompt, llm=llm)
+                text = llm_chain.run(question)
+                template = str(template) + str(text)
+
+            return question + ' . ' + template.replace("{question}", ""), {"question": question, "generated-text": template}
         
         except Exception as e:
             return str(e)
